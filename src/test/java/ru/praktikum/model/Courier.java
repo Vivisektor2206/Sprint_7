@@ -4,7 +4,6 @@ public class Courier {
     private String login;
     private String password;
     private String firstName;
-    //private Integer id;
 
     public Courier() {
     }
@@ -19,9 +18,6 @@ public class Courier {
         return login;
     }
 
-   // public Integer getId() {
-   //     return id;
-   // }
 
     public String getPassword() {
         return password;
@@ -43,7 +39,4 @@ public class Courier {
         this.firstName = firstName;
     }
 
-   // public void setId(Integer id) {
-  //      this.id = id;
-  //  }
 }
