@@ -1,5 +1,6 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 import io.restassured.response.Response;
@@ -13,7 +14,6 @@ public class CreateCourierBaseTest extends CourierBaseTest {
     @DisplayName("CanCreate new courier and check response")
     @Description("Можно создать нового курьера и проверить ответ сервера")
     public void canCreateNewCourierAndCheckResponse() {
-        try {
             Courier courier = CourierAuthData.getUniqueCourier();
 
             // Создаём курьера
@@ -29,20 +29,12 @@ public class CreateCourierBaseTest extends CourierBaseTest {
             if (testCourierId == null) {
                 throw new RuntimeException("Не удалось получить ID курьера с логином: " + courier.getLogin());
             }
-
-            System.out.println("Создан курьер с ID: " + testCourierId);
-        } catch (AssertionError e) {
-            System.err.println("Тест не прошёл проверку: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Произошла непредвиденная ошибка: " + e.getMessage());
-        }
     }
 
     @Test
     @DisplayName("Can't create the same courier and check response")
     @Description("Нельзя создать двух одинаковых курьеров, с  проверкой ответа сервера")
     public void cantCreateTheSameCourierAndCheckResponce() {
-        try {
             Courier courier = CourierAuthData.getUniqueCourier();
             // Создаём курьера
             CourierClient courierClient = new CourierClient();
@@ -52,7 +44,7 @@ public class CreateCourierBaseTest extends CourierBaseTest {
 
             //Пытаемся создать еще одного курьера с тем же логином
 
-            Response createResponseForSecondRequest = courierClient.createSameCourier(courier);
+            Response createResponseForSecondRequest = courierClient.create(courier);
             Assert.assertEquals(409, createResponseForSecondRequest.getStatusCode());
             String actualMessage = createResponseForSecondRequest.jsonPath().getString("message");
             String expectedMessage = "Этот логин уже используется. Попробуйте другой.";
@@ -60,51 +52,42 @@ public class CreateCourierBaseTest extends CourierBaseTest {
                     actualMessage);
 
             System.out.println("Полный ответ ошибки: " + createResponseForSecondRequest.asString());
-        } catch (AssertionError e) {
-            System.err.println("Тест не прошёл проверку: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Произошла непредвиденная ошибка: " + e.getMessage());
-        }
     }
 
     @Test
     @DisplayName("Can't create courier without login field")
-    @Description("Нельзя создать курьера без поля логина в теле запроса, с  проверкой ответа сервера")
+    @Description("Нельзя создать курьера без поля логина в теле запроса, с проверкой ответа сервера")
     public void cantCreateCourierWithoutLoginField() {
-        try {
-            Courier courier = CourierAuthData.getUniqueCourier();
-            // Формируем тело запроса БЕЗ поля login
-            CourierClient courierClient = new CourierClient();
-            Response createResponse = courierClient.createWithoutLoginField(courier);
+        Courier courier = CourierAuthData.getUniqueCourier();
+        // Создаём объект без логина
+        Courier courierWithoutLogin = new Courier(null, courier.getPassword(), null);
 
-            System.out.println("Полный ответ создания: " + createResponse.asString());
-            Assert.assertEquals(400, createResponse.getStatusCode());
+        CourierClient courierClient = new CourierClient();
+        Response createResponse = courierClient.create(courierWithoutLogin);
 
-        } catch (AssertionError e) {
-            System.err.println("Тест не прошёл проверку: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Произошла непредвиденная ошибка: " + e.getMessage());
-        }
+        System.out.println("Полный ответ создания: " + createResponse.asString());
+        createResponse.then()
+                .statusCode(400)
+                .body("message", CoreMatchers.containsString("Недостаточно данных для создания учетной записи"));
     }
+
 
     @Test
     @DisplayName("Can't create courier without password field")
-    @Description("Нельзя создать курьера без поля пароля в теле запроса, с  проверкой ответа сервера")
+    @Description("Нельзя создать курьера без поля пароля в теле запроса, с проверкой ответа сервера")
     public void cantCreateCourierWithoutPasswordField() {
-        try {
-            Courier courier = CourierAuthData.getUniqueCourier();
-            // Формируем тело запроса БЕЗ поля password
-            CourierClient courierClient = new CourierClient();
-            Response createResponse = courierClient.createWithoutPasswordField(courier);
+        Courier courier = CourierAuthData.getUniqueCourier();
+        // Создаём объект без пароля
+        Courier courierWithoutPassword = new Courier(courier.getLogin(), null, null);
 
-            System.out.println("Полный ответ создания: " + createResponse.asString());
-            Assert.assertEquals(400, createResponse.getStatusCode());
+        CourierClient courierClient = new CourierClient();
+        Response createResponse = courierClient.create(courierWithoutPassword);
 
-        } catch (AssertionError e) {
-            System.err.println("Тест не прошёл проверку: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Произошла непредвиденная ошибка: " + e.getMessage());
-        }
+        System.out.println("Полный ответ создания: " + createResponse.asString());
+        createResponse.then()
+                .statusCode(400)
+                .body("message", CoreMatchers.containsString("Недостаточно данных для создания учетной записи"));
     }
+
 
 }

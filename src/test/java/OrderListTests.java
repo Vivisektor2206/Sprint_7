@@ -19,7 +19,7 @@ public class OrderListTests extends OrdersBaseTest {
 
     @Step("Отправка запроса на получение списка заказов")
     private Response getOrdersListAndVerifyStatus() {
-        Response response = OrderUtils.getOrdersList(null);
+        Response response = OrderClient.getOrdersList(null);
         response.then().statusCode(200);
         return response;
     }

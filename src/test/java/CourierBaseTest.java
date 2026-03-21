@@ -1,4 +1,5 @@
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 
@@ -18,23 +19,10 @@ public class CourierBaseTest {
     @After
     public void cleanupTestCourierById() {
         if (testCourierId != null) {
-            try {
-                given()
-                        .log().all()
-                        .pathParam("id", testCourierId)
-                        .when()
-                        .delete(DELETE_ENDPOINT)
-                        .then()
-                        .log().ifValidationFails()
-                        .statusCode(200)
-                        .body("ok", equalTo(true));
-
-                System.out.println("Курьер с ID '" + testCourierId + "' успешно удалён");
-            } catch (Exception e) {
-                System.err.println("Ошибка при удалении курьера с ID '" + testCourierId + "': " + e.getMessage());
-            } finally {
-                testCourierId = null;
-            }
+            CourierClient courierClient = new CourierClient();
+            Response deleteResponse = courierClient.deleteCourier(testCourierId.toString());
+            System.out.println("Курьер с ID " + testCourierId + " удалён. Ответ: " + deleteResponse.asString());
         }
     }
+
 }
