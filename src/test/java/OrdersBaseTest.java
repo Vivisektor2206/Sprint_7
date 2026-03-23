@@ -1,81 +1,49 @@
-/*import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-
-import static io.restassured.RestAssured.given;
-
-
-public class OrdersBaseTest {
-
-    private static final String BASE_URL = "https://qa-scooter.praktikum-services.ru";
-
-
-    protected static Integer lastTrackNumber;
-
-    @BeforeClass
-    public static void setUp() {
-        RestAssured.baseURI = BASE_URL;
-    }
-
-    @AfterClass
-    public static void cancelLastOrder() {
-        if (lastTrackNumber != null) {
-            // Формируем JSON вручную — без кавычек вокруг числа
-
-        orderClient.createJsonRequest();
-
-
-            if (statusCode == 200) {
-                System.out.println("Заказ успешно отменён. Трек‑номер: " + lastTrackNumber);
-            } else if (statusCode == 404) {
-                System.out.println("Заказ не найден (возможно, уже отменён). Трек‑номер: " + lastTrackNumber);
-            } else {
-                System.err.println("Ошибка отмены заказа. Трек‑номер: " + lastTrackNumber +
-                        ", статус: " + statusCode + ", ответ: " + responseBody);
-                System.err.println("Тело запроса на отмену: " + cancelBody);
-            }
-        }
-    }
-
-}
-*/
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.After;
 
-import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class OrdersBaseTest {
 
-    private static final String BASE_URL = "https://qa-scooter.praktikum-services.ru";
 
-    protected static Integer lastTrackNumber;
-    // Инициализируем orderClient для использования в @AfterClass
-    private static OrderClient orderClient = new OrderClient();
+    protected String lastTrackNumber;
+    private OrderClient orderClient = new OrderClient();
 
-    @BeforeClass
-    public static void setUp() {
-        RestAssured.baseURI = BASE_URL;
+    @Before
+    public void setUp() {
+        RestAssured.baseURI = CourierBaseTest.BASE_URL;
+        Response createResponse = orderClient.createOrderWithColor(null);
+
+        // Добавляем проверки при создании заказа в setUp
+        createResponse.then()
+                .statusCode(SC_CREATED)
+                .body("track", notNullValue());
+
+        lastTrackNumber = createResponse.jsonPath().getString("track");
+        System.out.println("Заказ создан для теста. Трек‑номер: " + lastTrackNumber);
     }
 
-    @AfterClass
-    public static void cancelLastOrder() {
+    @After
+    @SuppressWarnings("PMD.SystemPrintln")
+    public void cancelLastOrder() {
         if (lastTrackNumber != null) {
-            // Вызываем метод отмены заказа и получаем статус
             int statusCode = orderClient.cancelOrderByTrack(lastTrackNumber);
 
-            if (statusCode == 200) {
+            if (statusCode == SC_OK) {
                 System.out.println("Заказ успешно отменён. Трек‑номер: " + lastTrackNumber);
-            } else if (statusCode == 404) {
+            } else if (statusCode == SC_NOT_FOUND) {
                 System.out.println("Заказ не найден (возможно, уже отменён). Трек‑номер: " + lastTrackNumber);
             } else {
-                System.err.println("Ошибка отмены заказа. Трек‑номер: " + lastTrackNumber +
-                        ", статус: " + statusCode);
+                System.err.println("Ошибка отмены заказа. Трек‑номер: " + lastTrackNumber + ", статус: " + statusCode);
             }
         }
     }
 }
+
 
 

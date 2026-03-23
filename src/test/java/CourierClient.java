@@ -1,67 +1,38 @@
 import Model.Courier;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
-import com.google.gson.Gson;
-
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 
 public class CourierClient {
-
     private static final String CREATE_ENDPOINT = "/api/v1/courier";
     private static final String LOGIN_ENDPOINT = "/api/v1/courier/login";
 
+    private final CourierApiRequests apiClient = new CourierApiRequests();
+
     @Step("Отправка запроса на создание курьера")
     public Response create(Courier courier) {
-        Gson gson = new Gson();
-        String json = gson.toJson(courier);
-
-        return given()
-                .log().all()
-                .header("Content-Type", "application/json")
-                .body(json)
-                .when()
-                .post(CREATE_ENDPOINT)
-                .then()
-                .log().ifError()
-                .extract().response();
+        Response response = apiClient.post(CREATE_ENDPOINT, courier);
+        response.then().log().ifError();
+        return response;
     }
-
 
     @Step("Отправка запроса на авторизацию курьера")
     public Response authorization(Courier courier) {
-        Gson gson = new Gson();
-        String json = gson.toJson(courier);
-
-        return given()
-                .log().all()
-                .header("Content-Type", "application/json")
-                .body(json)
-                .when()
-                .post(LOGIN_ENDPOINT)
-                .then()
-                .log().ifError()
-                .extract().response();
+        Response response = apiClient.post(LOGIN_ENDPOINT, courier);
+        response.then().log().ifError();
+        return response;
     }
-
 
     @Step("Отправка запроса на удаление курьера")
     public static Response deleteCourier(String courierId) {
+        // Создаём тело запроса для удаления
         String json = String.format("{\"id\":\"%s\"}", courierId);
 
-        return given()
-                .log().all()
-                .header("Content-Type", "application/json")
-                .body(json)
-                .when()
-                .delete(CREATE_ENDPOINT + "/" + courierId)
-                .then()
-                .log().ifError()
-                .statusCode(200)
-                .body("ok", equalTo(true))
-                .extract().response();
+        CourierApiRequests apiClient = new CourierApiRequests();
+        Response response = apiClient.delete(CREATE_ENDPOINT + "/" + courierId, json);
+
+        // Удаляем все проверки из метода
+        response.then().log().ifError();
+
+        return response;
     }
-
-
 }

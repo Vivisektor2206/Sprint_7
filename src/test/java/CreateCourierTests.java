@@ -8,7 +8,7 @@ import Model.Courier;
 
 import static org.apache.http.HttpStatus.*;
 
-public class CreateCourierBaseTest extends CourierBaseTest {
+public class CreateCourierTests extends CourierBaseTest {
 
     @Test
     @DisplayName("CanCreate new courier and check response")

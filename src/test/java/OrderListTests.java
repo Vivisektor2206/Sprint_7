@@ -4,7 +4,10 @@ import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import org.junit.Test;
 
+
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.notNullValue;
+
 
 public class OrderListTests extends OrdersBaseTest {
 
@@ -20,7 +23,7 @@ public class OrderListTests extends OrdersBaseTest {
     @Step("Отправка запроса на получение списка заказов")
     private Response getOrdersListAndVerifyStatus() {
         Response response = OrderClient.getOrdersList(null);
-        response.then().statusCode(200);
+        response.then().statusCode(SC_OK);
         return response;
     }
 

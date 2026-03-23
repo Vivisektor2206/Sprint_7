@@ -9,6 +9,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.hamcrest.CoreMatchers.notNullValue;
+
 @RunWith(Parameterized.class)
 public class OrderCreationTests extends OrdersBaseTest {
 
@@ -35,14 +38,15 @@ public class OrderCreationTests extends OrdersBaseTest {
     @DisplayName("Can create order with different color options")
     @Description("Проверяется создание заказа с разными вариантами указания цвета, проверяется наличие поля track в ответе")
     public void canCreateOrderWithDifferentColorOptions() {
-        // Используем метод из OrderClient для создания заказа
         Response createOrderResponse = orderClient.createOrderWithColor(color);
+        createOrderResponse.then()
+                .statusCode(SC_CREATED)
+                .body("track", notNullValue());
 
-        // Извлекаем track как число
-        Integer trackNumber = createOrderResponse.jsonPath().getObject("track", Integer.class);
+        String trackNumber = createOrderResponse.jsonPath().getString("track");
         lastTrackNumber = trackNumber;
 
-        System.out.println("Заказ создан успешно. Трек‑номер: " + trackNumber);
+        System.out.println("Заказ создан успешно. Трек-номер: " + trackNumber);
         System.out.println("Полный ответ создания заказа: " + createOrderResponse.asString());
     }
 }
