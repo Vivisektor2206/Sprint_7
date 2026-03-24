@@ -24,7 +24,7 @@ public class CourierBaseTest {
         // Переносим проверку статуса создания курьера в setUp
         createResponse.then().statusCode(SC_CREATED);
 
-        testCourierId = CourierAuthData.getCourierIdByLoginPassword(testCourier);
+        testCourierId = CourierClient.getCourierIdByLoginPassword(testCourier);
     }
 
     @After

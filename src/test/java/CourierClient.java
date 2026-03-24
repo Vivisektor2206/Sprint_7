@@ -2,6 +2,9 @@ import Model.Courier;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 
+import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_OK;
+
 public class CourierClient {
     private static final String CREATE_ENDPOINT = "/api/v1/courier";
     private static final String LOGIN_ENDPOINT = "/api/v1/courier/login";
@@ -35,4 +38,29 @@ public class CourierClient {
 
         return response;
     }
+
+    // Метод для получения ID курьера через логин/пароль
+    @Step("Отправка запроса на авторизацию курьера")
+    public static Integer getCourierIdByLoginPassword(Courier courier) {
+        Response loginResponse = given()
+                .header("Content-Type", "application/json")
+                .body(courier)
+                .when()
+                .post("/api/v1/courier/login")
+                .then()
+                // Оставляем только логирование ошибок — не прерываем выполнение при ошибке
+                .log().ifError()
+                .extract().response();
+
+        // Проверка статуса и обработка ошибок
+        if (loginResponse.statusCode() == SC_OK) {
+            return loginResponse.jsonPath().getInt("id");
+        } else {
+            System.err.println("Не удалось авторизоваться для получения ID. Статус: "
+                    + loginResponse.statusCode()
+                    + ", тело ответа: " + loginResponse.asString());
+            return null;
+        }
+    }
+
 }

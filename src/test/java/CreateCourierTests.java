@@ -24,7 +24,7 @@ public class CreateCourierTests extends CourierBaseTest {
         Assert.assertEquals(SC_CREATED, createResponse.getStatusCode());
 
         // Получаем ID через авторизацию
-        testCourierId = CourierAuthData.getCourierIdByLoginPassword(courier);
+        testCourierId = CourierClient.getCourierIdByLoginPassword(courier);
 
         if (testCourierId == null) {
             throw new RuntimeException("Не удалось получить ID курьера с логином: " + courier.getLogin());
